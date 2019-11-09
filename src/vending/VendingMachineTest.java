@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class VendingMachineTest {
 
@@ -27,10 +27,13 @@ public class VendingMachineTest {
         vm.insertCoin(Coin.JEDENZLOTY);
         vm.insertCoin(Coin.PIECDZIESIATGROSZY);
 
-        Bucket collected = vm.collectProductAndChange();
-        System.out.println(collected);
+        Bucket<Product, List<Coin>> collected = vm.collectProductAndChange();
+//        System.out.println(collected.getSecond());
+        Product collectedProduct = collected.getFirst();
+        List<Coin> collectedChange = collected.getSecond();
 
-        assertEquals(product, collected.getFirst());
+        assertEquals(product, collectedProduct);
+        assertTrue(collectedChange.isEmpty());
     }
 
     @Test
@@ -39,9 +42,11 @@ public class VendingMachineTest {
         vm.selectProduct(product);
         vm.insertCoin(Coin.DWAZLOTE);
         vm.insertCoin(Coin.PIECDZIESIATGROSZY);
-        Bucket collected = vm.collectProductAndChange();
+        Bucket<Product, List<Coin>> collected = vm.collectProductAndChange();
+        List<Coin> collectedChange = collected.getSecond();
 
         assertEquals(product, collected.getFirst());
+        assertTrue(collectedChange.isEmpty());
 
 
     }
