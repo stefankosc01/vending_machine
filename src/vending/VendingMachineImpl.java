@@ -1,5 +1,6 @@
 package vending;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +34,12 @@ public class VendingMachineImpl implements VendingMachine {
 
     @Override
     public void selectProduct(Product product) {
-        selectedProduct = product;
+        if (productInventory.hasItem(product)) {
+            selectedProduct = product;
+            return;
+
+        }
+        throw new SoldOutException("Sold Out, Please buy another item");
 
     }
 
@@ -44,19 +50,32 @@ public class VendingMachineImpl implements VendingMachine {
     }
 
     @Override
-    public List<Coin> collectChange() {
+    public Bucket<Product, List<Coin>> collectProductAndChange() {
+
+        Product product = collectProduct();
+        List<Coin> change = collectChange();
+
+
+        return new Bucket<>(product, change);
+    }
+
+
+
+    private List<Coin> collectChange() {
         long changeAmount = balance - selectedProduct.getPrice();
         System.out.println("change");
         System.out.println(changeAmount);
+        ArrayList<Coin> change = new ArrayList<>();
 
-        List<Coin> change = Collections.EMPTY_LIST;
+        if (changeAmount > 0) {
 
+
+        }
 
         return null;
     }
 
-    @Override
-    public Product collectProduct() {
+    private Product collectProduct() {
         System.out.println("balance");
         System.out.println(balance);
         if (balance >= selectedProduct.getPrice()) {
