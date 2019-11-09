@@ -18,7 +18,7 @@ public enum Product {
 
         return name;
     }
-    public long getPrice() {
+    public int getPrice() {
 
         return price;
     }
