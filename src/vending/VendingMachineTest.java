@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 public class VendingMachineTest {
 
     private static VendingMachineImpl vm;
+
     @BeforeClass
     public static void setUp(){
 
@@ -26,10 +27,10 @@ public class VendingMachineTest {
         vm.insertCoin(Coin.JEDENZLOTY);
         vm.insertCoin(Coin.PIECDZIESIATGROSZY);
 
-        Product collectedProduct = vm.collectProduct();
-        System.out.println(collectedProduct);
+        Bucket collected = vm.collectProductAndChange();
+        System.out.println(collected);
 
-        assertEquals(product, collectedProduct);
+        assertEquals(product, collected.getFirst());
     }
 
     @Test
@@ -38,10 +39,9 @@ public class VendingMachineTest {
         vm.selectProduct(product);
         vm.insertCoin(Coin.DWAZLOTE);
         vm.insertCoin(Coin.PIECDZIESIATGROSZY);
-        Product collectedProduct = vm.collectProduct();
-        List<Coin> change = vm.collectChange();
+        Bucket collected = vm.collectProductAndChange();
 
-        assertEquals(product, collectedProduct);
+        assertEquals(product, collected.getFirst());
 
 
     }
