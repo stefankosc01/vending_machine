@@ -20,43 +20,33 @@ public class VendingMachineImpl implements VendingMachine {
     }
 
     private void initializeWithExcludedDenomination(int excludedDenomination) {
-        int quantity = 1;
+        int coinsQuantity = 1;
 
         for(Coin c : Coin.values()){
-            // TODO: remove after test
-            if (c.getDenomination() == excludedDenomination) {
-                quantity = 0;
-            } else {
-                quantity = 1;
-            }
-            machineBalance = machineBalance + c.getDenomination() * quantity;
-            coinInventory.put(c, quantity);
+
+            coinsQuantity = c.getDenomination() == excludedDenomination ? 0 : 1;
+
+            machineBalance = machineBalance + c.getDenomination() * coinsQuantity;
+            coinInventory.put(c, coinsQuantity);
         }
 
         for(Product i : Product.values()){
-            productInventory.put(i, quantity);
+            productInventory.put(i, coinsQuantity);
         }
     }
 
 
-
-
     private void initialize() {
-        int quantity = 1;
+        int coinsQuantity = 1;
 
         for(Coin c : Coin.values()){
-            // TODO: remove after test
-//            if (c.getDenomination() == 5) {
-//                quantity = 0;
-//            } else {
-//                quantity = 1;
-//            }
-            machineBalance = machineBalance + c.getDenomination() * quantity;
-            coinInventory.put(c, quantity);
+
+            machineBalance = machineBalance + c.getDenomination() * coinsQuantity;
+            coinInventory.put(c, coinsQuantity);
         }
 
         for(Product i : Product.values()){
-            productInventory.put(i, quantity);
+            productInventory.put(i, coinsQuantity);
         }
 
     }
