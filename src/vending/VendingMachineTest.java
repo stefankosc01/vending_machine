@@ -10,7 +10,7 @@ public class VendingMachineTest {
 
 
     @Test
-    public void buyProductWithoutChange() {
+    public void buyWithoutChange() {
 
         VendingMachine vm = VendingMachineFactory.createVendingMachine();
 
@@ -42,13 +42,16 @@ public class VendingMachineTest {
         assertEquals(product, collected.getFirst());
         // TODO: parametrize expected
         assertEquals(2, collectedChange.size());
+        int expectedChange = 7;
+        int change = collectedChange.stream().mapToInt(i -> i.getDenomination()).sum();
+        assertEquals(expectedChange, change);
 
     }
 
     @Test
     public void buyWhenNoEqualChangeAvailable() {
 
-        VendingMachine vm = VendingMachineFactory.createVendingMachineWithExcludedDenomination();
+        VendingMachine vm = VendingMachineFactory.createVendingMachineWithExcluded5gr();
 
         Product product = Product.SPRITE;
         vm.selectProduct(product);
@@ -60,6 +63,18 @@ public class VendingMachineTest {
 
         // TODO: parametrize expected
         assertEquals(1, collectedChange.size());
+        int expectedChange = 10;
+        int change = collectedChange.stream().mapToInt(i -> i.getDenomination()).sum();
+        assertEquals(expectedChange, change);
 
+    }
+
+    @Test(expected = NotSufficientBalanceForChangeException.class)
+    public void buyWhenNoChangeAvailable() {
+
+        VendingMachine vm = VendingMachineFactory.createVendingMachineWithLessThan73gr();
+
+        Product product = Product.SPRITE;
+        vm.selectProduct(product);
     }
 }
