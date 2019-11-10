@@ -6,13 +6,13 @@ public class VendingMachineImpl implements VendingMachine {
 
     private Product selectedProduct;
     private int insertedAmount;
-    private long machineBalance;
+    private int machineBalance;
 
     private Inventory<Coin> coinInventory = new Inventory<>();
     private Inventory<Product> productInventory = new Inventory<>();
 
-    public Inventory<Coin> coinInventoryState() {
-        return coinInventory;
+    public int getMachineBalance() {
+        return machineBalance;
     }
 
     public VendingMachineImpl() {
@@ -20,7 +20,7 @@ public class VendingMachineImpl implements VendingMachine {
     }
 
     public void initialize() {
-        int quantity = 6;
+        int quantity = 2;
 
         for(Coin c : Coin.values()){
             machineBalance = machineBalance + c.getDenomination() * quantity;
@@ -31,21 +31,21 @@ public class VendingMachineImpl implements VendingMachine {
             productInventory.put(i, quantity);
         }
 
-
     }
 
 
     @Override
     public void selectProduct(Product product) throws SoldOutException, NotSufficientBalanceForChangeException{
+        if (machineBalance < 73) {
+
+            throw new NotSufficientBalanceForChangeException("Machine does not have enough balance to return change");
+        }
         if (productInventory.hasItem(product)) {
             selectedProduct = product;
             return;
 
         }
 
-        if (machineBalance < 73) {
-            throw new NotSufficientBalanceForChangeException("Machine does not have enough balance to return change");
-        }
         throw new SoldOutException("Sold Out, Please select another item");
 
     }
@@ -77,43 +77,86 @@ public class VendingMachineImpl implements VendingMachine {
 
 
         if (changeAmount > 0) {
-//            change = new ArrayList<>();
             change = getChange(changeAmount);
 
-
         }
+
+        insertedAmount = 0;
+
 
         return change;
     }
 
     private ArrayList<Coin> getChange(int changeAmount) {
 
-        int amount = changeAmount;
-        System.out.println(amount);
-
-        ArrayList<Integer> values = new ArrayList<>();
-        ArrayList<Integer> available = new ArrayList<>();
+        ArrayList<Integer> coinValues = new ArrayList<>();
+        ArrayList<Integer> availableCoins = new ArrayList<>();
 
 
         for ( Coin c : Coin.values()) {
-            values.add(c.getDenomination());
-            available.add(coinInventory.getQuantity(c));
+            coinValues.add(c.getDenomination());
+            availableCoins.add(coinInventory.getQuantity(c));
         }
-        System.out.println(values);
-        System.out.println(available);
+
 
         List<Integer> changeToBeReturned = new ArrayList<>();
         LinkedList<Integer> coins = new LinkedList<>();
 
-        getChangeRecursively(0, amount, values, available, changeToBeReturned, coins);
-
-        System.out.println(changeToBeReturned);
+        getChangeRecursively(0, changeAmount, coinValues, availableCoins, changeToBeReturned, coins);
 
 
         ArrayList<Coin> change = new ArrayList();
 
+        for(Coin c : Coin.values()){
+            for(int changeInt : changeToBeReturned) {
+                if (c.getDenomination() == changeInt) {
+                    change.add(c);
+                }
+            }
+        }
+
+        for (Coin a: change) {
+            machineBalance = machineBalance - a.getDenomination();
+            updateCoinInventory(a);
+
+        }
+
 
         return change;
+    }
+
+    private void updateCoinInventory(Coin coin) {
+            coinInventory.deduct(coin);
+    }
+
+    public static void getChangeRecursively(int pos, int changeAmount, ArrayList<Integer> coinValues, ArrayList<Integer> availableCoins, List<Integer> changeToBeReturned, LinkedList<Integer> coins)
+    {
+
+        if (changeAmount == 0) {
+
+            if (changeToBeReturned.isEmpty() || changeToBeReturned.size() < coins.size()) {
+
+                changeToBeReturned.clear();
+                changeToBeReturned.addAll(coins);
+            }
+        }
+        else if (changeAmount < 0) {
+            return;
+        }
+
+        for (int i = pos; i < coinValues.size() && coinValues.get(i) <= changeAmount; i++) {
+
+            if (availableCoins.get(i) > 0) {
+
+                int a = availableCoins.get(i);
+                availableCoins.set(i, a - 1);
+                coins.addLast(coinValues.get(i));
+                getChangeRecursively(i, changeAmount - coinValues.get(i), coinValues, availableCoins, changeToBeReturned, coins);
+                coins.removeLast();
+                int b = availableCoins.get(i);
+                availableCoins.set(i, b + 1);
+            }
+        }
     }
 
     private Product collectProduct() {
@@ -130,41 +173,9 @@ public class VendingMachineImpl implements VendingMachine {
         return insertedAmount >= selectedProduct.getPrice();
     }
 
-
-
     @Override
     public List<Coin> refund() {
         return null;
     }
 
-    public static void getChangeRecursively(int pos, int change, ArrayList<Integer> values, ArrayList<Integer> available, List<Integer> changeToBeReturned, LinkedList<Integer> coins)
-    {
-        if (change == 0)
-        {
-            if (changeToBeReturned.isEmpty() || changeToBeReturned.size() < coins.size())
-            {
-                changeToBeReturned.clear();
-                changeToBeReturned.addAll(coins);
-            }
-        }
-        else if (change < 0)
-        {
-            return;
-        }
-
-        for (int i = pos; i < values.size() && values.get(i) <= change; i++)
-        {
-            System.out.println("position");
-            System.out.println(pos);
-            if (available.get(i) > 0)
-            {
-                int a = available.get(i);
-                available.set(i, a - 1);
-                coins.addLast(values.get(i));
-                getChangeRecursively(i, change - values.get(i), values, available, changeToBeReturned, coins);
-                coins.removeLast();
-                int b = available.get(i);
-                available.set(i, b + 1);            }
-        }
-    }
 }
