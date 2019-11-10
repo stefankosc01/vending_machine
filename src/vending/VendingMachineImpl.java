@@ -15,16 +15,16 @@ public class VendingMachineImpl implements VendingMachine {
     public VendingMachineImpl() {
         initialize();
     }
-    public VendingMachineImpl(int excludedDenomination) {
-        initializeWithExcludedDenomination(excludedDenomination);
+    public VendingMachineImpl(ArrayList<Coin> excluded) {
+        initializeWithExcludedDenomination(excluded);
     }
 
-    private void initializeWithExcludedDenomination(int excludedDenomination) {
+    private void initializeWithExcludedDenomination(ArrayList<Coin> excluded) {
         int coinsQuantity = 1;
 
         for(Coin c : Coin.values()){
 
-            coinsQuantity = c.getDenomination() == excludedDenomination ? 0 : 1;
+            coinsQuantity = excluded.indexOf(c) > - 1 ? 0 : 1;
 
             machineBalance = machineBalance + c.getDenomination() * coinsQuantity;
             coinInventory.put(c, coinsQuantity);
@@ -54,7 +54,7 @@ public class VendingMachineImpl implements VendingMachine {
 
     @Override
     public void selectProduct(Product product) throws SoldOutException, NotSufficientBalanceForChangeException{
-        if (machineBalance < 73) {
+        if (machineBalance <= 73) {
 
             throw new NotSufficientBalanceForChangeException("Machine does not have enough balance to return change");
         }
@@ -103,18 +103,21 @@ public class VendingMachineImpl implements VendingMachine {
         int changeToBeReturnedSum = change.stream().mapToInt(i -> i.getDenomination()).sum();
 
 
-        if (changeToBeReturnedSum == changeAmount) {
-            return change;
-
-        }
-
-        while (change.size() == 0) {
-            changeAmount = changeAmount + 1;
-            change = getChange(changeAmount);
+        if (changeToBeReturnedSum != changeAmount) {
+            while (change.size() == 0) {
+                changeAmount = changeAmount + 1;
+                change = getChange(changeAmount);
+            }
         }
 
         insertedAmount = 0;
         selectedProduct = null;
+
+        for (Coin c: change) {
+            machineBalance = machineBalance - c.getDenomination();
+            updateCoinInventory(c);
+
+        }
 
         return change;
     }
@@ -146,13 +149,6 @@ public class VendingMachineImpl implements VendingMachine {
                 }
             }
         }
-
-        for (Coin a: change) {
-            machineBalance = machineBalance - a.getDenomination();
-            updateCoinInventory(a);
-
-        }
-
 
         return change;
     }
