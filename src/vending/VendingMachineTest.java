@@ -1,10 +1,6 @@
 package vending;
 
-import com.sun.xml.internal.bind.v2.TODO;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
 
@@ -65,8 +61,5 @@ public class VendingMachineTest {
         // TODO: parametrize expected
         assertEquals(1, collectedChange.size());
 
-
     }
-
-
 }
