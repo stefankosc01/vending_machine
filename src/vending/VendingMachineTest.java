@@ -26,9 +26,9 @@ public class VendingMachineTest {
         vm.selectProduct(product);
         vm.insertCoin(Coin.JEDENZLOTY);
         vm.insertCoin(Coin.PIECDZIESIATGROSZY);
+        //150
 
         Bucket<Product, List<Coin>> collected = vm.collectProductAndChange();
-//        System.out.println(collected.getSecond());
         Product collectedProduct = collected.getFirst();
         List<Coin> collectedChange = collected.getSecond();
 
@@ -38,16 +38,15 @@ public class VendingMachineTest {
 
     @Test
     public void buyProductWithChange() {
+
         Product product = Product.MARS;
         vm.selectProduct(product);
         vm.insertCoin(Coin.DWAZLOTE);
         vm.insertCoin(Coin.PIECDZIESIATGROSZY);
         Bucket<Product, List<Coin>> collected = vm.collectProductAndChange();
         List<Coin> collectedChange = collected.getSecond();
-
         assertEquals(product, collected.getFirst());
-        assertTrue(collectedChange.isEmpty());
-
+        assertEquals(3, collectedChange.size());
 
     }
 
