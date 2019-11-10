@@ -11,18 +11,46 @@ public class VendingMachineImpl implements VendingMachine {
     private Inventory<Coin> coinInventory = new Inventory<>();
     private Inventory<Product> productInventory = new Inventory<>();
 
-    public int getMachineBalance() {
-        return machineBalance;
-    }
 
     public VendingMachineImpl() {
         initialize();
     }
+    public VendingMachineImpl(int excludedDenomination) {
+        initializeWithExcludedDenomination(excludedDenomination);
+    }
 
-    public void initialize() {
-        int quantity = 2;
+    private void initializeWithExcludedDenomination(int excludedDenomination) {
+        int quantity = 1;
 
         for(Coin c : Coin.values()){
+            // TODO: remove after test
+            if (c.getDenomination() == excludedDenomination) {
+                quantity = 0;
+            } else {
+                quantity = 1;
+            }
+            machineBalance = machineBalance + c.getDenomination() * quantity;
+            coinInventory.put(c, quantity);
+        }
+
+        for(Product i : Product.values()){
+            productInventory.put(i, quantity);
+        }
+    }
+
+
+
+
+    private void initialize() {
+        int quantity = 1;
+
+        for(Coin c : Coin.values()){
+            // TODO: remove after test
+//            if (c.getDenomination() == 5) {
+//                quantity = 0;
+//            } else {
+//                quantity = 1;
+//            }
             machineBalance = machineBalance + c.getDenomination() * quantity;
             coinInventory.put(c, quantity);
         }
@@ -63,7 +91,6 @@ public class VendingMachineImpl implements VendingMachine {
         Product product = collectProduct();
         List<Coin> change = collectChange();
 
-
         return new Bucket<>(product, change);
     }
 
@@ -71,18 +98,33 @@ public class VendingMachineImpl implements VendingMachine {
 
     private List<Coin> collectChange() {
 
-        int changeAmount = insertedAmount - selectedProduct.getPrice();
+        int productPrice = selectedProduct.getPrice();
+
+        int changeAmount = insertedAmount - productPrice;
 
         List<Coin> change = Collections.EMPTY_LIST;
 
 
         if (changeAmount > 0) {
             change = getChange(changeAmount);
+        }
+
+
+        int changeToBeReturnedSum = change.stream().mapToInt(i -> i.getDenomination()).sum();
+
+
+        if (changeToBeReturnedSum == changeAmount) {
+            return change;
 
         }
 
-        insertedAmount = 0;
+        while (change.size() == 0) {
+            changeAmount = changeAmount + 1;
+            change = getChange(changeAmount);
+        }
 
+        insertedAmount = 0;
+        selectedProduct = null;
 
         return change;
     }
@@ -102,7 +144,7 @@ public class VendingMachineImpl implements VendingMachine {
         List<Integer> changeToBeReturned = new ArrayList<>();
         LinkedList<Integer> coins = new LinkedList<>();
 
-        getChangeRecursively(0, changeAmount, coinValues, availableCoins, changeToBeReturned, coins);
+        prepareChangeValues(0, changeAmount, coinValues, availableCoins, changeToBeReturned, coins);
 
 
         ArrayList<Coin> change = new ArrayList();
@@ -129,15 +171,15 @@ public class VendingMachineImpl implements VendingMachine {
             coinInventory.deduct(coin);
     }
 
-    public static void getChangeRecursively(int pos, int changeAmount, ArrayList<Integer> coinValues, ArrayList<Integer> availableCoins, List<Integer> changeToBeReturned, LinkedList<Integer> coins)
+    public static void prepareChangeValues(int pos, int changeAmount, ArrayList<Integer> coinValues, ArrayList<Integer> availableCoins, List<Integer> changeValues, LinkedList<Integer> coins)
     {
 
         if (changeAmount == 0) {
 
-            if (changeToBeReturned.isEmpty() || changeToBeReturned.size() < coins.size()) {
+            if (changeValues.isEmpty() || changeValues.size() < coins.size()) {
 
-                changeToBeReturned.clear();
-                changeToBeReturned.addAll(coins);
+                changeValues.clear();
+                changeValues.addAll(coins);
             }
         }
         else if (changeAmount < 0) {
@@ -148,10 +190,11 @@ public class VendingMachineImpl implements VendingMachine {
 
             if (availableCoins.get(i) > 0) {
 
+                // TODO: refactor types of availableCoins and coinValues and write algorithm in more functional way
                 int a = availableCoins.get(i);
                 availableCoins.set(i, a - 1);
                 coins.addLast(coinValues.get(i));
-                getChangeRecursively(i, changeAmount - coinValues.get(i), coinValues, availableCoins, changeToBeReturned, coins);
+                prepareChangeValues(i, changeAmount - coinValues.get(i), coinValues, availableCoins, changeValues, coins);
                 coins.removeLast();
                 int b = availableCoins.get(i);
                 availableCoins.set(i, b + 1);
@@ -171,11 +214,6 @@ public class VendingMachineImpl implements VendingMachine {
 
     private boolean insertedAmountSufficient() {
         return insertedAmount >= selectedProduct.getPrice();
-    }
-
-    @Override
-    public List<Coin> refund() {
-        return null;
     }
 
 }
